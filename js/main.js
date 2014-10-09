@@ -1,8 +1,8 @@
 $(function () {
-	var $targetRoot = null, state = 0;
+	var state = 0;
 
 	function onMouseMove(pageX, pageY, targetRoot) {
-		$targetRoot = $(targetRoot);
+		var $targetRoot = $(targetRoot);
 		$targetRoot.addClass('painted');
 
 		var rootOffset = $targetRoot.offset();
@@ -85,9 +85,21 @@ $(function () {
 	$(document).on('mousemove', '.ct', function (e) {
 		$('.ct').removeClass('painted');
 		onMouseMove(e.pageX, e.pageY, e.target);
-	});
 
-	$(document).on('mousedown', function () {
-		$targetRoot.html(getHtmlByState(state));
+	}).on('click', '.ct', function (e) {
+		$(e.target).html(getHtmlByState(state));
+
+	}).on('contextmenu', '.ct', function (e) {
+		var $parent = $(e.target).parent();
+
+		if (!$parent.hasClass('ct')) {
+			$parent = $(e.target);
+		}
+
+		var $childClone = $parent.find('>').children().clone();
+		$parent.empty().append($childClone);
+
+		e.preventDefault();
+
 	});
 });
