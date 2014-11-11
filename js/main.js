@@ -1,105 +1,158 @@
 $(function () {
-	var state = 0;
 
-	function onMouseMove(pageX, pageY, targetRoot) {
-		var $targetRoot = $(targetRoot);
-		$targetRoot.addClass('painted');
+	const situationsEnum = {
+		LEFT: 0,
+		RIGHT: 1,
+		TOP: 2,
+		BOTTOM: 3,
+		FULLSCREEN: 4
+	};
 
-		var rootOffset = $targetRoot.offset();
-		var localPos = {
-			x: pageX - rootOffset.left,
-			y: pageY - rootOffset.top
-		}
 
-		var targetWidth = $targetRoot.width();
-		var targetHeight = $targetRoot.height();
-		var wThreshold = 0.3;
-		var hThreshold = 0.4;
+	var currentSituation = situationsEnum.FULLSCREEN;
 
-		if (localPos.x < 0 || localPos.y < 0) {
-			return;
-		}
 
-		// left
-		if (localPos.x < targetWidth * wThreshold) {
-			state = 0;
-			targetWidth >>= 1;
+	var calcMarkPosition = function (rectSize, rectOffset, posInsideRect) {
+		rectSize = $.extend(true, {}, rectSize);
+		rectOffset = $.extend(true, {}, rectOffset);
+		posInsideRect = $.extend(true, {}, posInsideRect);
 
-		// right
-		} else if (localPos.x > targetWidth - targetWidth * wThreshold) {
-			state = 1;
-			targetWidth >>= 1;
-			rootOffset.left += targetWidth;
+		const xThreshold = rectSize.width * 0.3;
+		const yThreshold = rectSize.height * 0.4;
 
-		// top
-		} else if (localPos.y < targetHeight * hThreshold) {
-			state = 2;
-			targetHeight >>= 1;
+		// situation judgement
+		if (posInsideRect.x < xThreshold) {
+			currentSituation = situationsEnum.LEFT;
+			rectSize.width /= 2;
 
-		// bottom
-		} else if (localPos.y > targetHeight - targetHeight * hThreshold) {
-			state = 3;
-			targetHeight >>= 1;
-			rootOffset.top += targetHeight;
+		} else if (posInsideRect.x > rectSize.width - xThreshold) {
+			currentSituation = situationsEnum.RIGHT;
+			rectSize.width /= 2;
+			rectOffset.left += rectSize.width;
+
+		} else if (posInsideRect.y < yThreshold) {
+			currentSituation = situationsEnum.TOP;
+			rectSize.height /= 2;
+
+		} else if (posInsideRect.y > rectSize.height - yThreshold) {
+			currentSituation = situationsEnum.BOTTOM;
+			rectSize.height /= 2;
+			rectOffset.top += rectSize.height;
 
 		} else {
-			state = 4;
+			currentSituation = situationsEnum.FULLSCREEN;
 		}
 
-		frameMoveTo({
-			top: rootOffset.top,
-			left: rootOffset.left,
-			width: targetWidth,
-			height: targetHeight
-		});
+		return {
+			top: rectOffset.top,
+			left: rectOffset.left,
+			width: rectSize.width,
+			height: rectSize.height
+		};
 	}
 
-	var $frame = $('.frame');
-	var currentFramePos = { top: 0, left: 0, width: 0, height: 0 };
 
-	function frameMoveTo(pos) {
-		if (currentFramePos.top === pos.top &&
-			currentFramePos.left === pos.left &&
-			currentFramePos.width === pos.width &&
-			currentFramePos.height === pos.height) {
-			return;
+	var setMarkPosition = (function () {
+		var $mark = $('.mark');
+		var positionCache = { top: 0, left: 0, width: 0, height: 0 };
+
+		return function (position) {
+
+			if (positionCache.top === position.top &&
+				positionCache.left === position.left &&
+				positionCache.width === position.width &&
+				positionCache.height === position.height) {
+				return;
+			}
+			positionCache = position;
+			$mark.css(positionCache);
+		}
+	}());
+
+
+	var onClickHandler = function (e) {
+		var html = "";
+
+		switch (currentSituation) {
+
+			case situationsEnum.LEFT:
+			case situationsEnum.RIGHT:
+				html = '<div class="rect vertical"></div><div class="rect vertical"></div>';
+				break;
+
+			case situationsEnum.TOP:
+			case situationsEnum.BOTTOM:
+				html = '<div class="rect horizontal"></div><div class="rect horizontal"></div>';
+				break;
+
+			case situationsEnum.FULLSCREEN:
+				html = '';
+				break;
 		}
 
-		currentFramePos = pos;
-		$frame.css(currentFramePos);
-	}
+		$(e.target).html(html);
+	};
 
-	function getHtmlByState(state) {
-		switch (state) {
-		case 0:
-		case 1:
-			return '<div class="ct vertical"></div><div class="ct vertical"></div>';
-		case 2:
-		case 3:
-			return '<div class="ct horizontal"></div><div class="ct horizontal"></div>';
-		default:
-			return '';
+
+	var onMouseMoveHandler = (function () {
+		var $rect = [];
+		var rectOffset = {
+			top: 0,
+			left: 0
+		};
+		var rectSize = {
+			width: 0,
+			height: 0
+		};
+
+		return function (e) {
+			if ($rect[0] !== e.target) {
+				$rect = $(e.target);
+
+				rectOffset = $rect.offset();
+				rectSize = {
+					width: $rect.width(),
+					height: $rect.height()
+				}
+
+				$('.rect').removeClass('painted');
+				$rect.addClass('painted');
+			}
+
+			var posInsideRect = {
+				x: e.pageX - rectOffset.left,
+				y: e.pageY - rectOffset.top
+			};
+
+			if (posInsideRect.x < 0 || posInsideRect.y < 0) {
+				return;
+			}
+
+			setMarkPosition(calcMarkPosition(
+				rectSize,
+				rectOffset,
+				posInsideRect
+			));
 		}
-	}
+	}());
 
-	$(document).on('mousemove', '.ct', function (e) {
-		$('.ct').removeClass('painted');
-		onMouseMove(e.pageX, e.pageY, e.target);
 
-	}).on('click', '.ct', function (e) {
-		$(e.target).html(getHtmlByState(state));
+	var onContextMenuHandler = function (e) {
+		var $parentRect = $(e.target).parent();
 
-	}).on('contextmenu', '.ct', function (e) {
-		var $parent = $(e.target).parent();
-
-		if (!$parent.hasClass('ct')) {
-			$parent = $(e.target);
+		if (!$parentRect.hasClass('rect')) {
+			$parentRect = $(e.target);
 		}
 
-		var $childClone = $parent.find('>').children().clone();
-		$parent.empty().append($childClone);
+		var $childrenClone = $parentRect.find('>').children().clone();
+		$parentRect.empty().append($childrenClone);
 
 		e.preventDefault();
+	};
 
-	});
+
+	$(document)
+		.on('contextmenu', '.rect', onContextMenuHandler)
+		.on('mousemove', '.rect', onMouseMoveHandler)
+		.on('click', '.rect', onClickHandler);
 });
