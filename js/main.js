@@ -97,7 +97,6 @@ $(function () {
 
 		var updateTargetRect = function (rect) {
 			$rect = $(rect);
-
 			rectOffset = $rect.offset();
 			rectSize = {
 				width: $rect.width(),
