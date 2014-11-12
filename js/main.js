@@ -92,27 +92,25 @@ $(function () {
 
 	var onMouseMoveHandler = (function () {
 		var $rect = [];
-		var rectOffset = {
-			top: 0,
-			left: 0
-		};
-		var rectSize = {
-			width: 0,
-			height: 0
-		};
+		var rectOffset = { top: 0, left: 0 };
+		var rectSize = { width: 0, height: 0 };
+
+		var updateTargetRect = function (rect) {
+			$rect = $(rect);
+
+			rectOffset = $rect.offset();
+			rectSize = {
+				width: $rect.width(),
+				height: $rect.height()
+			}
+
+			$('.rect').removeClass('painted');
+			$rect.addClass('painted');
+		}
 
 		return function (e) {
 			if ($rect[0] !== e.target) {
-				$rect = $(e.target);
-
-				rectOffset = $rect.offset();
-				rectSize = {
-					width: $rect.width(),
-					height: $rect.height()
-				}
-
-				$('.rect').removeClass('painted');
-				$rect.addClass('painted');
+				updateTargetRect(e.target);
 			}
 
 			var posInsideRect = {
