@@ -23,14 +23,14 @@ $(function () {
 			currentForm = formsEnum.LEFT;
 			rectSize.width /= 2;
 
+		} else if (posInsideRect.y < yThreshold) {
+			currentForm = formsEnum.TOP;
+			rectSize.height /= 2;
+
 		} else if (posInsideRect.x > rectSize.width - xThreshold) {
 			currentForm = formsEnum.RIGHT;
 			rectSize.width /= 2;
 			rectOffset.left += rectSize.width;
-
-		} else if (posInsideRect.y < yThreshold) {
-			currentForm = formsEnum.TOP;
-			rectSize.height /= 2;
 
 		} else if (posInsideRect.y > rectSize.height - yThreshold) {
 			currentForm = formsEnum.BOTTOM;
