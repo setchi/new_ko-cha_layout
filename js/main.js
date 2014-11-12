@@ -1,6 +1,6 @@
 $(function () {
 
-	const situationsEnum = {
+	const formsEnum = {
 		LEFT: 0,
 		RIGHT: 1,
 		TOP: 2,
@@ -8,8 +8,7 @@ $(function () {
 		FULLSCREEN: 4
 	};
 
-
-	var currentSituation = situationsEnum.FULLSCREEN;
+	var currentForm = formsEnum.FULLSCREEN;
 
 
 	var calcMarkPosition = function (rectSize, rectOffset, posInsideRect) {
@@ -20,27 +19,26 @@ $(function () {
 		const xThreshold = rectSize.width * 0.3;
 		const yThreshold = rectSize.height * 0.4;
 
-		// situation judgement
 		if (posInsideRect.x < xThreshold) {
-			currentSituation = situationsEnum.LEFT;
+			currentForm = formsEnum.LEFT;
 			rectSize.width /= 2;
 
 		} else if (posInsideRect.x > rectSize.width - xThreshold) {
-			currentSituation = situationsEnum.RIGHT;
+			currentForm = formsEnum.RIGHT;
 			rectSize.width /= 2;
 			rectOffset.left += rectSize.width;
 
 		} else if (posInsideRect.y < yThreshold) {
-			currentSituation = situationsEnum.TOP;
+			currentForm = formsEnum.TOP;
 			rectSize.height /= 2;
 
 		} else if (posInsideRect.y > rectSize.height - yThreshold) {
-			currentSituation = situationsEnum.BOTTOM;
+			currentForm = formsEnum.BOTTOM;
 			rectSize.height /= 2;
 			rectOffset.top += rectSize.height;
 
 		} else {
-			currentSituation = situationsEnum.FULLSCREEN;
+			currentForm = formsEnum.FULLSCREEN;
 		}
 
 		return {
@@ -57,7 +55,6 @@ $(function () {
 		var positionCache = { top: 0, left: 0, width: 0, height: 0 };
 
 		return function (position) {
-
 			if (positionCache.top === position.top &&
 				positionCache.left === position.left &&
 				positionCache.width === position.width &&
@@ -72,22 +69,21 @@ $(function () {
 
 	var onClickHandler = function (e) {
 		var html = "";
+		switch (currentForm) {
 
-		switch (currentSituation) {
+		case formsEnum.LEFT:
+		case formsEnum.RIGHT:
+			html = '<div class="rect vertical"></div><div class="rect vertical"></div>';
+			break;
 
-			case situationsEnum.LEFT:
-			case situationsEnum.RIGHT:
-				html = '<div class="rect vertical"></div><div class="rect vertical"></div>';
-				break;
+		case formsEnum.TOP:
+		case formsEnum.BOTTOM:
+			html = '<div class="rect horizontal"></div><div class="rect horizontal"></div>';
+			break;
 
-			case situationsEnum.TOP:
-			case situationsEnum.BOTTOM:
-				html = '<div class="rect horizontal"></div><div class="rect horizontal"></div>';
-				break;
-
-			case situationsEnum.FULLSCREEN:
-				html = '';
-				break;
+		case formsEnum.FULLSCREEN:
+			html = "";
+			break;
 		}
 
 		$(e.target).html(html);
