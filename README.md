@@ -1,9 +1,9 @@
-new_ko-cha_variable_layout_demo
+new_ko-cha_layout
 ==========================
 こんな風にエディタのレイアウト変えれたら良いな的なデモ。
 
 左クリックで区切り追加、右クリックで解除。
 
-[http://setchi.jp/labo/new_ko-cha_variable_layout_demo/](http://setchi.jp/labo/new_ko-cha_variable_layout_demo/)
+[https://setchi.github.io/new_ko-cha_layout](https://setchi.github.io/new_ko-cha_layout)
 
-![new_ko-cha_variable_layout_demo](img/new_ko-cha_variable_layout_demo.png "new_ko-cha_variable_layout_demo")
+![new_ko-cha_layout](img/new_ko-cha_layout.png "new_ko-cha_layout")
